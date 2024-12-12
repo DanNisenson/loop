@@ -1,37 +1,32 @@
-.global _main // Declare the entry point of the program
-.align 4      // Align the next instruction to a 4-byte boundary
+.global _main       // Declare the entry point of the program
+.align 4            // Align the next instruction to a 4-byte boundary
 
 _main:
-  mov X9, #0 
-  
+  mov X9, #0        // init counter
+  adr X10, message  // init char pointer to string start address
+
 loop:
-  adr X1, message
-  mov X2, #14
-  bl print
-  add X9, X9, #1
-  cmp X9, #10
-  b.lt loop
+  bl print          // print char
+  add X9, X9, #1    // increment counter
+  add X10, X10, #1  // increment char pointer
+  cmp X9, #10       // compare counter to max iteration amount
+  b.lt loop         // if less than max, iterate
   
-  mov X0, #0      // Put the exit code into register X0
-  b exit          // Jump to the exit subroutine
+  mov X0, #0        // Put the exit code into register X0
+  b exit            // Jump to the exit subroutine
 
 print: 
-  mov X16, #4
-  mov X0, #1
-  svc #0x80
+  mov X1, X10       // set character address
+  mov X2, #1        // set print length
+  mov X16, #4       // set syscall
+  mov X0, #1        // set stout
+  svc #0x80         // interrupt and make syscall
   ret
 
+exit:               // Pass in: X0 = exit code
+  mov X16, #1       // 1 = specify the 'exit' syscall
+  svc #0x80         // Execute the syscall, terminating the program
 
-exit:         // Pass in: X0 = exit code
-  mov X16, #1 // 1 = specify the 'exit' syscall
-  svc #0x80   // Execute the syscall, terminating the program
-
-// Note we're not using the .data section to simplify a few things in this
-// example. If you want to use it, consult this stackoverflow answer:
-// https://stackoverflow.com/a/65354324
-
-// Otherwise, you can use labels and the .ascii directive to define strings
-// And `adr` to load the address of the string into a register
 message:
-  .ascii "Hello, world!\n"
+  .ascii "0123456789"
 
