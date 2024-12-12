@@ -2,18 +2,25 @@
 .align 4      // Align the next instruction to a 4-byte boundary
 
 _main:
-  adr X1, message // Load the address of the message into register X1
-  mov X2, #14     // Put the length of the message into register X2
-  bl print        // Call the print subroutine
-
+  mov X9, #0 
+  
+loop:
+  adr X1, message
+  mov X2, #14
+  bl print
+  add X9, X9, #1
+  cmp X9, #10
+  b.lt loop
+  
   mov X0, #0      // Put the exit code into register X0
   b exit          // Jump to the exit subroutine
 
-print:        // Pass in: X1 = message, X2 = length
-  mov X16, #4 // 4 = specify the 'write' syscall
-  mov X0, #1  // 1 = specify to write to stdout
-  svc #0x80   // Execute the syscall
-  ret         // Return to the caller (address in register X30)
+print: 
+  mov X16, #4
+  mov X0, #1
+  svc #0x80
+  ret
+
 
 exit:         // Pass in: X0 = exit code
   mov X16, #1 // 1 = specify the 'exit' syscall
